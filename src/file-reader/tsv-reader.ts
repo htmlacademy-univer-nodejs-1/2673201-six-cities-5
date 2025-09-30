@@ -1,6 +1,6 @@
 import {readFileSync} from 'node:fs';
 import {FileReader} from './file-reader.js';
-import {OfferRent, OfferRentType} from '../types/offerRent.type';
+import {OfferCityType, OfferComfortType, OfferRent, OfferRentType} from '../types/offerRent.type';
 
 
 export class TsvReader implements FileReader {
@@ -28,17 +28,17 @@ export class TsvReader implements FileReader {
         title: String(title),
         description: String(description),
         date: String(date),
-        city: String(city),
+        city: city as OfferCityType,
         previewPhoto: String(previewPhoto),
         photoLiving: photoLiving.split(';').map((photo) => photo.trim()),
-        flagPremium: flagPremium.toLowerCase() ? flagPremium.toLowerCase() : false,
-        flagFavourite: flagFavourite.toLowerCase() ? flagFavourite.toLowerCase() : false,
-        rating: Number.parseInt(rating, 10),
+        flagPremium: flagPremium.trim().toLowerCase() === 'true',
+        flagFavourite: flagFavourite.trim().toLowerCase() === 'true',
+        rating: parseFloat(rating),
         typeLiving: typeLiving as OfferRentType,
         countRooms: Number(countRooms),
         countGuests: Number(countGuests),
         price: Number(price),
-        comforts: comforts.split(';').map((comfort) => comfort.trim()),
+        comforts: comforts.split(';').map((c) => c.trim()).filter(Boolean).map((c) => c as OfferComfortType),
         author: String(author),
         countComments: Number(countComments),
         latitude: Number(latitude),
