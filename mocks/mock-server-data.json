@@ -1,0 +1,36 @@
+{
+  "title": [
+    "Sunshine Place",
+    "Cozy Place",
+    "Amazing house",
+    "Romantic Place",
+    "Cute house"
+  ],
+  "description": [
+    "Wonderful place with sunny views",
+    "Cozy place with cute views",
+    "Family place wont be dissapointed",
+    "Lovely place with spectacular views",
+    "New cute place and simple joy"
+  ],
+  "city": [
+    "Paris",
+    "Cologne",
+    "Brussels",
+    "Amsterdam",
+    "Hamburg",
+    "Dusseldorf"
+  ],
+  "previewPhoto": ["hh.jpg", "h2.jpg", "h3.jpg", "h4.jpg", "h5.jpg"],
+  "photoLiving": [
+    "tst1.jpg","tst2.jpg","tst3.jpg","tst4.jpg","tst5.jpg","tst6.jpg",
+    "tst21.jpg","tst22.jpg","tst23.jpg","tst24.jpg","tst25.jpg","tst26.jpg",
+    "tst31.jpg","tst32.jpg","tst33.jpg","tst34.jpg","tst35.jpg","tst36.jpg",
+    "tst41.jpg","tst42.jpg","tst43.jpg","tst44.jpg","tst45.jpg","tst46.jpg",
+    "tst51.jpg","tst52.jpg","tst53.jpg","tst54.jpg","tst55.jpg","tst56.jpg"
+  ],
+  "comforts": ["Breakfast", "Air conditioning", "Laptop friendly workspace", "Baby seat", "Washer", "Towels", "Fridge"],
+  "author": ["Lonny", "Gendolph", "Rayn Gosling"],
+  "latitude": [48.85661, 50.938361, 50.846557, 52.370216, 53.550341, 51.225402],
+  "longitude": [2.351499, 6.959974, 4.351697, 4.895168, 10.000654, 6.776314]
+}
