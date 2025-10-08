@@ -1,0 +1,3 @@
+title	description	date	city	previewPhoto	photoLiving	flagPremium	flagFavourite	rating	typeLiving	countRooms	countGuests	price	comforts	author	countComments	latitude	longitude
+CoolPlace	Modern	2025-07-27	Amsterdam	ph1.jpg	ph2.jpg;ph3.jpg;ph4.jpg;ph5.jpg;ph6.jpg	true	false	4.9	apartment	2	3	120	Breakfast;Towels;Fridge	user1	0	52.370216	4.895168
+CuteStyle	Vintage	2025-05-17	Hamburg	pht1.jpg	pht2.jpg;pht3.jpg;pht4.jpg;pht5.jpg;pht6.jpg	false	true	4.3	house	3	6	250	Air conditioning;Washer;Fridge	user2	0	53.550341	10.000654
