@@ -10,9 +10,9 @@ type PackageJSONConfig = {
 function checkForConfig(value: unknown): value is PackageJSONConfig {
   return (
     typeof value === 'object' &&
-      value !== null &&
-      !Array.isArray(value) &&
-      Object.hasOwn(value, 'version')
+    value !== null &&
+    !Array.isArray(value) &&
+    Object.hasOwn(value, 'version')
   );
 }
 
