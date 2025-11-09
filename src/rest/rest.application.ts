@@ -9,9 +9,9 @@ import {getMongoURI} from '../helpers/database.js';
 @injectable()
 export class Application {
   constructor(
-        @inject(Component.Logger) private readonly logger: Logger,
-        @inject(Component.Config) private readonly config: Config<RestSchema>,
-        @inject(Component.DatabaseClient) private readonly databaseClient: DatabaseClient,
+    @inject(Component.Logger) private readonly logger: Logger,
+    @inject(Component.Config) private readonly config: Config<RestSchema>,
+    @inject(Component.DatabaseClient) private readonly databaseClient: DatabaseClient,
   ) {}
 
   private async _initDb() {

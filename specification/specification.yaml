@@ -1,0 +1,630 @@
+openapi: 3.0.9
+info:
+  title: API сервер для проекта «Шесть городов»
+  description: Список ресурсов и маршрутов сервера «Шесть городов».
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  version: 2.0.0
+servers:
+  - url: 'https'
+tags:
+  - name: users
+    description: Пользователи и авторизация
+  - name: offers
+    description: Предложения по аренде
+  - name: comments
+    description: Комментарии к предложениям
+  - name: favorites
+    description: Избранные предложения
+paths:
+  /users/register:
+    post:
+      tags: [users]
+      summary: Регистрация пользователя
+      description: Регистрирация нового пользователя.
+      requestBody:
+        description: Информация для создания нового пользователя.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/createUser'
+      responses:
+        "201":
+          description: Пользователь зарегистрирован.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
+        "409":
+          description: Пользователь с таким email уже существует.
+
+  /users/login:
+    post:
+      tags: [users]
+      summary: Авторизация пользователя
+      description: Авторизация пользователя по email и паролю.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/loginRequest'
+      responses:
+        "200":
+          description: Вход успешен.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/tokenResponse'
+        "401":
+          description: Неверный вход - неверный пароль или неверный логин.
+
+    get:
+      tags: [users]
+      summary: Проверка состояния пользователя
+      description: Возвращает данные пользователя, который успешно авторизовался.
+      security:
+        - token: []
+      responses:
+        "200":
+          description: Текущий пользователь.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
+        "401":
+          description: Пользователь не авторизован.
+
+  /users/logout:
+    post:
+      tags: [users]
+      summary: Выход из приложения
+      description: Завершение пользовательской сессии.
+      security:
+        - token: []
+      responses:
+        "204":
+          description: Успешный выход.
+        "401":
+          description: Пользователь не авторизован.
+
+  /offers:
+    get:
+      tags: [offers]
+      summary: Список предложений по аренде
+      description: Список предложений по аренде.
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        "200":
+          description: Предложения.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OfferRent'
+    post:
+      tags: [offers]
+      summary: Создание нового предложения
+      security:
+        - token: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOfferRent'
+      responses:
+        "201":
+          description: Созданное предложение.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferRent'
+        "400":
+          description: Ошибка с предложением.
+        "401":
+          description: Требуется авторизация.
+
+
+  /offers/{offerId}:
+    get:
+      tags: [offers]
+      summary: Информация по предложению
+      parameters:
+        - $ref: '#/components/parameters/OfferId'
+      responses:
+        "200":
+          description: Полная информация.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferRent'
+        "404":
+          description: Не найдено.
+    patch:
+      tags: [offers]
+      summary: Редактирование предложения
+      security:
+        - token: []
+      parameters:
+        - $ref: '#/components/parameters/OfferId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOfferRent'
+      responses:
+        "200":
+          description: Обновлённое предложение.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferRent'
+        "401":
+          description: Требуется авторизация.
+        "403":
+          description: Можно редактировать только свои предложения.
+        "404":
+          description: Не найдено.
+
+    delete:
+      tags: [offers]
+      summary: Удаление предложения
+      security:
+        - token: []
+      parameters:
+        - $ref: '#/components/parameters/OfferId'
+      responses:
+        "204":
+          description: Удалено.
+        "401":
+          description: Требуется авторизация.
+        "403":
+          description: Можно удалять только свои предложения.
+        "404":
+          description: Не найдено.
+
+  /offers/{offerId}/comments:
+    get:
+      tags: [comments]
+      summary: Список комментариев к предложению
+      parameters:
+        - $ref: '#/components/parameters/OfferId'
+        - $ref: '#/components/parameters/CommentsLimit'
+      responses:
+        "200":
+          description: Последние комментарии.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comment'
+    post:
+      tags: [comments]
+      summary: Добавление комментария
+      security:
+        - token: []
+      parameters:
+        - $ref: '#/components/parameters/OfferId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateComment'
+      responses:
+        "201":
+          description: Созданный комментарий.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        "400":
+          description: Ошибка комментария.
+        "401":
+          description: Требуется авторизация.
+
+  /favorites:
+    get:
+      tags: [favorites]
+      summary: Список избранных предложений
+      security:
+        - token: []
+      responses:
+        "200":
+          description: Избранные предложения.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OfferRent'
+        "401":
+          description: Требуется авторизация.
+
+components:
+  securitySchemes:
+    token:
+      type: apiKey
+      in: header
+      name: X-Token
+      description: Ключ токена.
+
+  parameters:
+    OfferId:
+      name: offerId
+      in: path
+      required: true
+      description: Идентификатор предложения.
+      schema:
+        type: string
+        pattern: '^[a-fA-F0-9]{24}$'
+        example: 6329c3d6a04ab1061c6425ea
+    Limit:
+      name: limit
+      in: query
+      required: false
+      description: Количество элементов (по умолчанию 60).
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 60
+        default: 60
+    CommentsLimit:
+      name: limit
+      in: query
+      required: false
+      description: Количество комментариев (по умолчанию 50).
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 50
+        default: 50
+
+  schemas:
+    createUser:
+      type: object
+      required: [name, email, password, typeUser]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 15
+          example: peach
+        email:
+          type: string
+          format: email
+          pattern: '^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$'
+          example: peach@example.ru
+        avatar:
+          type: string
+          format: uri
+          nullable: true
+          description: URL аватара (jpg/png)
+        password:
+          type: string
+          minLength: 6
+          maxLength: 12
+          example: 666666
+        typeUser:
+          type: string
+          enum: ['обычный','pro']
+
+    user:
+      required: [id, name, email, password, typeUser]
+      type: object
+      properties:
+        id:
+          type: string
+          pattern: '^[a-fA-F0-9]{24}$'
+          example: 6329c3d6a04ab1061c6425ea
+        name:
+          type: string
+          example: Happydarky
+          minLength: 1
+          maxLength: 15
+        email:
+          type: string
+          format: email
+          example: happydarky@example.ru
+        avatar:
+          type: string
+          format: uri
+          nullable: true
+        typeUser:
+          type: string
+          enum: ['обычный','pro']
+
+    loginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          pattern: '^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$'
+        password:
+          type: string
+          minLength: 6
+          maxLength: 12
+
+    tokenResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: Простой токен.
+          pattern: '^[A-Za-z0-9]{10,64}$'
+          example: 1a2a3a4d5d
+
+    OfferRentType:
+      type: string
+      enum: [ 'apartment','house','room','hotel' ]
+    OfferComfortType:
+      type: string
+      enum: [ 'Breakfast','Air conditioning','Laptop friendly workspace','Baby seat','Washer','Towels','Fridge' ]
+    OfferCityType:
+      type: string
+      enum: [ 'Paris','Cologne','Brussels','Amsterdam','Hamburg','Dusseldorf' ]
+
+    OfferRent:
+      type: object
+      properties:
+        id:
+          type: string
+          pattern: '^[a-fA-F0-9]{24}$'
+          example: 1a2d3c4b5e6f7
+        title:
+          type: string
+          minLength: 10
+          maxLength: 100
+        description:
+          type: string
+          minLength: 20
+          maxLength: 1024
+        date:
+          type: string
+          format: date-time
+        city:
+          $ref: '#/components/schemas/OfferCityType'
+        previewPhoto:
+          type: string
+          format: uri
+        photoLiving:
+          type: array
+          minItems: 6
+          maxItems: 6
+          items:
+            type: string
+            format: uri
+        flagPremium:
+          type: boolean
+        flagFavourite:
+          type: boolean
+        rating:
+          type: number
+          minimum: 1
+          maximum: 5
+        typeLiving:
+          $ref: '#/components/schemas/OfferRentType'
+        countRooms:
+          type: integer
+          minimum: 1
+          maximum: 8
+        countGuests:
+          type: integer
+          minimum: 1
+          maximum: 10
+        price:
+          type: integer
+          minimum: 100
+          maximum: 100000
+        comforts:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferComfortType'
+        author:
+          type: string
+        countComments:
+          type: integer
+        latitude:
+          type: number
+        longitude:
+          type: number
+      required:
+        - id
+        - title
+        - description
+        - date
+        - city
+        - previewPhoto
+        - photoLiving
+        - flagPremium
+        - flagFavourite
+        - rating
+        - typeLiving
+        - countRooms
+        - countGuests
+        - price
+        - comforts
+        - author
+        - countComments
+        - latitude
+        - longitude
+
+    CreateOfferRent:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 10
+          maxLength: 100
+        description:
+          type: string
+          minLength: 20
+          maxLength: 1024
+        date:
+          type: string
+          format: date-time
+        city:
+          $ref: '#/components/schemas/OfferCityType'
+        previewPhoto:
+          type: string
+          format: uri
+        photoLiving:
+          type: array
+          minItems: 6
+          maxItems: 6
+          items:
+            type: string
+            format: uri
+        flagPremium:
+          type: boolean
+        flagFavourite:
+          type: boolean
+        rating:
+          type: number
+          minimum: 1
+          maximum: 5
+        typeLiving: {
+          $ref: '#/components/schemas/OfferRentType' }
+        countRooms:
+          type: integer
+          minimum: 1
+          maximum: 8
+        countGuests:
+          type: integer
+          minimum: 1
+          maximum: 10
+        price:
+          type: integer
+          minimum: 100
+          maximum: 100000
+        comforts:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferComfortType'
+        author:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+      required:
+        - title
+        - description
+        - date
+        - city
+        - previewPhoto
+        - photoLiving
+        - flagPremium
+        - flagFavourite
+        - rating
+        - typeLiving
+        - countRooms
+        - countGuests
+        - price
+        - comforts
+        - author
+        - latitude
+        - longitude
+
+    UpdateOfferRent:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 10
+          maxLength: 100
+        description:
+          type: string
+          minLength: 20
+          maxLength: 1024
+        date:
+          type: string
+          format: date-time
+        city:
+          $ref: '#/components/schemas/OfferCityType'
+        previewPhoto:
+          type: string
+          format: uri
+        photoLiving:
+          type: array
+          minItems: 6
+          maxItems: 6
+          items:
+            type: string
+            format: uri
+        flagPremium:
+          type: boolean
+        flagFavourite:
+          type: boolean
+        rating:
+          type: number
+          minimum: 1
+          maximum: 5
+        typeLiving:
+          $ref: '#/components/schemas/OfferRentType'
+        countRooms:
+          type: integer
+          minimum: 1
+          maximum: 8
+        countGuests:
+          type: integer
+          minimum: 1
+          maximum: 10
+        price:
+          type: integer
+          minimum: 100
+          maximum: 100000
+        comforts:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferComfortType'
+        author:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+
+    Comment:
+      type: object
+      properties:
+        id:
+          type: string
+          pattern: '^[a-fA-F0-9]{24}$'
+        text:
+          type: string
+          minLength: 5
+          maxLength: 1024
+        rating:
+          type: number
+          minimum: 1
+          maximum: 5
+        author:
+          $ref: '#/components/schemas/user'
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateComment:
+      type: object
+      required: [author, text, rating]
+      properties:
+        author:
+          $ref: '#/components/schemas/user'
+        text:
+          type: string
+          minLength: 5
+          maxLength: 1024
+        rating:
+          type: number
+          minimum: 1
+          maximum: 5
