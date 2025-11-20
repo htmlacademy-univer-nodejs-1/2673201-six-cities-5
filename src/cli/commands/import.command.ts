@@ -51,7 +51,8 @@ export class ImportCommand implements Command {
       avatar: '',
       typeUser: 'обычный',
       password: DEFAULT_USER_PASSWORD
-    }, this.salt!);
+    },
+      this.salt!);
 
     await this.offerService.create({
       title: offer.title,
@@ -62,14 +63,12 @@ export class ImportCommand implements Command {
       photoLiving: offer.photoLiving,
       flagPremium: offer.flagPremium,
       flagFavourite: offer.flagFavourite,
-      rating: offer.rating,
       typeLiving: offer.typeLiving,
       countRooms: offer.countRooms,
       countGuests: offer.countGuests,
       price: offer.price,
       comforts: offer.comforts,
       author: user.id.toString(),
-      countComments: offer.countComments,
       latitude: offer.latitude,
       longitude: offer.longitude
     });

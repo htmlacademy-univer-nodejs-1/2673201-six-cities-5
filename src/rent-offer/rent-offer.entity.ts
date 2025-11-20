@@ -42,7 +42,7 @@ export class RentOfferEntity extends defaultClasses.TimeStamps implements OfferR
   @prop({ required: true, default: false })
   public flagFavourite: boolean;
 
-  @prop({ required: true, min: 1, max: 5 })
+  @prop({ required: true, min: 0, max: 5, default: 0 })
   public rating: number;
 
   @prop({
@@ -90,14 +90,14 @@ export class RentOfferEntity extends defaultClasses.TimeStamps implements OfferR
     this.photoLiving = offerData.photoLiving;
     this.flagPremium = offerData.flagPremium;
     this.flagFavourite = offerData.flagFavourite;
-    this.rating = offerData.rating;
+    this.rating = 0;
     this.typeLiving = offerData.typeLiving;
     this.countRooms = offerData.countRooms;
     this.countGuests = offerData.countGuests;
     this.price = offerData.price;
     this.comforts = offerData.comforts;
     this.author = offerData.author;
-    this.countComments = offerData.countComments;
+    this.countComments = 0;
     this.latitude = offerData.latitude;
     this.longitude = offerData.longitude;
   }
