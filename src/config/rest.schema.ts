@@ -29,31 +29,31 @@ export const configRestSchema = convict<RestSchema>({
   DB_HOST: {
     doc: 'IP address of the database server (MongoDB)',
     format: 'ipaddress',
-    env: 'DB-HOST',
+    env: 'DB_HOST',
     default: '127.0.0.1'
   },
   DB_USER: {
     doc: 'Username to connect to the database',
     format: String,
-    env: 'DB-USER',
-    default: null,
+    env: 'DB_USER',
+    default: 'admin',
   },
   DB_PASSWORD: {
     doc: 'Password to connect to the database',
     format: String,
-    env: 'DB-PASSWORD',
-    default: null,
+    env: 'DB_PASSWORD',
+    default: 'test',
   },
   DB_PORT: {
     doc: 'Port to connect to the database (MongoDB)',
     format: String,
-    env: 'DB-PORT',
+    env: 'DB_PORT',
     default: '27017',
   },
   DB_NAME: {
     doc: 'Database name (MongoDB)',
     format: String,
-    env: 'DB-NAME',
+    env: 'DB_NAME',
     default: 'six-cities'
   },
 });

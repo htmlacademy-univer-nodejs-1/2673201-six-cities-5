@@ -9,14 +9,12 @@ export class CreateRentOfferDto {
   public photoLiving!: string[];
   public flagPremium!: boolean;
   public flagFavourite!: boolean;
-  public rating!: number;
   public typeLiving!: OfferRentType;
   public countRooms!: number;
   public countGuests!: number;
   public price!: number;
   public comforts!: OfferComfortType[];
   public author!: string;
-  public countComments!: number;
   public latitude!: number;
   public longitude!: number;
 }
