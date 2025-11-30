@@ -27,11 +27,17 @@ export class DefaultRentOfferService implements RentOfferService {
     return this.rentOfferModel.findById(offerId).populate('userId', 'offers').exec();
   }
 
-  public async find(): Promise<DocumentType<RentOfferEntity>[]> {
-    return this.rentOfferModel
+  public async find(limit?: number): Promise<DocumentType<RentOfferEntity>[]> {
+    const query = this.rentOfferModel
       .find()
-      .populate(['userId'])
-      .exec();
+      .sort({ createdAt: -1 })
+      .populate(['userId']);
+
+    if (limit) {
+      query.limit(limit);
+    }
+
+    return query.exec();
   }
 
   public async deleteById(offerId: string): Promise<DocumentType<RentOfferEntity> | null> {
