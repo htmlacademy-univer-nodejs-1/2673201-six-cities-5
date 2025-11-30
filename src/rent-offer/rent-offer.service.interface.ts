@@ -6,7 +6,7 @@ import {CreateRentOfferDto} from './create-rent-offer.dto';
 export interface RentOfferService {
   create(dto: CreateRentOfferDto): Promise<DocumentType<RentOfferEntity>>;
   findById(id: string): Promise<DocumentType<RentOfferEntity> | null>;
-  find(): Promise<DocumentType<RentOfferEntity>[]>;
+  find(limit?: number): Promise<DocumentType<RentOfferEntity>[]>;
   deleteById(offerId: string): Promise<DocumentType<RentOfferEntity> | null>;
   updateById(offerId: string, dto: UpdateOfferDto): Promise<DocumentType<RentOfferEntity> | null>;
   incCommentCount(offerId: string): Promise<DocumentType<RentOfferEntity> | null>;
