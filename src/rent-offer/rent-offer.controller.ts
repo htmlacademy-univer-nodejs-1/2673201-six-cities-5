@@ -37,6 +37,15 @@ export class RentOfferController extends BaseController {
     });
     this.addRoute({
       path: '/:offerId',
+      method: HttpMethod.Get,
+      handler: this.show,
+      middlewares: [
+        new ValidateObjectIdMiddleware('offerId'),
+        new DocumentExistsMiddleware(this.offerService, 'Offer', 'offerId'),
+      ]
+    });
+    this.addRoute({
+      path: '/:offerId',
       method: HttpMethod.Delete,
       handler: this.delete,
       middlewares: [
@@ -72,12 +81,17 @@ export class RentOfferController extends BaseController {
       typeof req.query.limit === 'string'
         ? Number(req.query.limit)
         : undefined;
-
     const offers = await this.offerService.find(limit);
     const responseData = offers.map((offer) => fillDTO(OfferRdo, offer));
-
     this.ok(res, responseData);
   }
+
+  public async show(req: Request, res: Response): Promise<void> {
+    const { offerId } = req.params as { offerId: string };
+    const offer = await this.offerService.findById(offerId);
+    this.ok(res, fillDTO(OfferRdo, offer));
+  }
+
 
   public async create({ body }: Request, res: Response,): Promise<void> {
     const offer = await this.offerService.create(body as CreateRentOfferDto);
