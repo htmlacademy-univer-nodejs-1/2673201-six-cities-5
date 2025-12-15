@@ -11,28 +11,63 @@ import { HttpError } from '../rest/errors/http-error.js';
 import { ValidateObjectIdMiddleware } from '../rest/middleware/validate.middleware.js';
 import { EditOfferDto } from './edit-offer.dto.js';
 import { DeleteOfferDto } from './delete-offer.dto.js';
-import {Logger} from '../logger/index.js';
-import {BaseController, HttpMethod} from '../rest/index.js';
+import { Logger } from '../logger/index.js';
+import { BaseController, HttpMethod } from '../rest/index.js';
+import { CommentService } from '../modules/comment/comment-service.interface.js';
+import { ValidateDtoMiddleware } from '../rest/middleware/validate-dto.middleware.js';
+import { DocumentExistsMiddleware } from '../rest/middleware/document-exist.middleware.js';
+import { DEFAULT_DISCUSSED_OFFER_COUNT, DEFAULT_NEW_OFFER_COUNT } from './offer.constant.js';
+import { CommentRdo } from '../modules/comment/rdo/comment.rdo.js';
 
 @injectable()
 export class RentOfferController extends BaseController {
   constructor(
-    @inject(Component.Logger) logger: Logger,
-    @inject(Component.RentOfferService)
-    private readonly offerService: RentOfferService,
+    @inject(Component.Logger) protected logger: Logger,
+    @inject(Component.RentOfferService) private readonly offerService: RentOfferService,
+    @inject(Component.CommentService) private readonly commentService: CommentService
   ) {
     super(logger);
-    this.logger.info('Register routes for RentOfferController');
-    this.addRoute({path: '/:offerId', method: HttpMethod.Get, handler: this.index, middlewares: [new ValidateObjectIdMiddleware('offerId')]
+    this.logger.info('Register routes for OfferController');
+    this.addRoute({ path: '/', method: HttpMethod.Get, handler: this.index });
+    this.addRoute({
+      path: '/',
+      method: HttpMethod.Post,
+      handler: this.create,
+      middlewares: [new ValidateDtoMiddleware(CreateRentOfferDto)]
     });
-    this.addRoute({path: '/', method: HttpMethod.Post, handler: this.create,
+    this.addRoute({
+      path: '/:offerId',
+      method: HttpMethod.Delete,
+      handler: this.delete,
+      middlewares: [
+        new ValidateObjectIdMiddleware('offerId'),
+        new DocumentExistsMiddleware(this.offerService, 'Offer', 'offerId')
+      ]
     });
+    this.addRoute({
+      path: '/:offerId',
+      method: HttpMethod.Patch,
+      handler: this.update,
+      middlewares: [
+        new ValidateObjectIdMiddleware('offerId'),
+        new DocumentExistsMiddleware(this.offerService, 'Offer', 'offerId'),
+        new ValidateDtoMiddleware(UpdateOfferDto)
+      ]
+    });
+    this.addRoute({
+      path: '/:offerId/comments',
+      method: HttpMethod.Get,
+      handler: this.getComments,
+      middlewares: [
+        new ValidateObjectIdMiddleware('offerId'),
+        new DocumentExistsMiddleware(this.offerService, 'Offer', 'offerId'),
+      ]
+    });
+    this.addRoute({ path: '/bundles/new', method: HttpMethod.Get, handler: this.getNew });
+    this.addRoute({ path: '/bundles/discussed', method: HttpMethod.Get, handler: this.getDiscussed });
   }
 
-  public async index(
-    req: Request,
-    res: Response,
-  ): Promise<void> {
+  public async index(req: Request, res: Response): Promise<void> {
     const limit =
       typeof req.query.limit === 'string'
         ? Number(req.query.limit)
@@ -44,53 +79,51 @@ export class RentOfferController extends BaseController {
     this.ok(res, responseData);
   }
 
-  public async create(
-    { body }: Request<unknown, unknown, CreateRentOfferDto>,
-    res: Response,
-  ): Promise<void> {
-    const offer = await this.offerService.create(body);
+  public async create({ body }: Request, res: Response,): Promise<void> {
+    const offer = await this.offerService.create(body as CreateRentOfferDto);
     const responseData = fillDTO(OfferRdo, offer);
-
     this.created(res, responseData);
   }
 
-  public async edit(
-    { params, body }: Request<{ offerId: string }, unknown, UpdateOfferDto>,
-    res: Response,
-  ): Promise<void> {
-    const existsOffer = await this.offerService.findById(params.offerId);
-
-    if (!existsOffer) {
-      throw new HttpError(
-        StatusCodes.NOT_FOUND,
-        `Offer with id ${params.offerId} not found`,
-        'RentOfferController',
+  public async update(req: Request, res: Response): Promise<void> {
+    const { offerId } = req.params as { offerId: string };
+    const updatedOffer = await this.offerService.updateById(offerId, req.body as UpdateOfferDto);
+    if (!updatedOffer) {
+      throw new HttpError(StatusCodes.NOT_FOUND, `Offer with id ${offerId} not found`, 'RentOfferController',
       );
     }
 
-    const updatedOffer = await this.offerService.updateById(params.offerId, body);
     const responseData = fillDTO(EditOfferDto, updatedOffer);
-
     this.ok(res, responseData);
   }
 
-  public async delete(
-    { params }: Request<{ offerId: string }>,
-    res: Response,
-  ): Promise<void> {
-    const existsOffer = await this.offerService.findById(params.offerId);
-
+  public async delete(req: Request, res: Response): Promise<void> {
+    const { offerId } = req.params as { offerId: string };
+    const existsOffer = await this.offerService.findById(offerId);
     if (!existsOffer) {
-      throw new HttpError(
-        StatusCodes.NOT_FOUND,
-        `Offer with id ${params.offerId} not found`,
-        'RentOfferController',
+      throw new HttpError(StatusCodes.NOT_FOUND, `Offer with id ${offerId} not found`, 'RentOfferController',
       );
     }
 
-    const deletedOffer = await this.offerService.deleteById(params.offerId);
+    const deletedOffer = await this.offerService.deleteById(offerId);
+    await this.commentService.deleteByOfferId(offerId);
     const responseData = fillDTO(DeleteOfferDto, deletedOffer ?? existsOffer);
-
     this.ok(res, responseData);
+  }
+
+  public async getComments(req: Request, res: Response): Promise<void> {
+    const { offerId } = req.params as { offerId: string };
+    const comments = await this.commentService.findByOfferId(offerId);
+    this.ok(res, fillDTO(CommentRdo, comments));
+  }
+
+  public async getNew(_req: Request, res: Response): Promise<void> {
+    const newOffers = await this.offerService.findNew(DEFAULT_NEW_OFFER_COUNT);
+    this.ok(res, fillDTO(OfferRdo, newOffers));
+  }
+
+  public async getDiscussed(_req: Request, res: Response): Promise<void> {
+    const discussedOffers = await this.offerService.findDiscussed(DEFAULT_DISCUSSED_OFFER_COUNT);
+    this.ok(res, fillDTO(OfferRdo, discussedOffers));
   }
 }

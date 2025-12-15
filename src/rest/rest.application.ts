@@ -8,6 +8,7 @@ import {getMongoURI} from '../helpers/database.js';
 import {UserController} from '../modules/user/user.controller.js';
 import {RentOfferController} from '../rent-offer/rent-offer.controller.js';
 import {ExceptionFilter} from './exception-filter/exception-filter.interface.js';
+import CommentController from '../modules/comment/comment.controller.js';
 
 
 @injectable()
@@ -18,14 +19,10 @@ export class Application {
     @inject(Component.Logger) private readonly logger: Logger,
     @inject(Component.Config) private readonly config: Config<RestSchema>,
     @inject(Component.DatabaseClient) private readonly databaseClient: DatabaseClient,
-    @inject(Component.UserController)
-    private readonly userController: UserController,
-
-    @inject(Component.RentController)
-    private readonly rentController: RentOfferController,
-
-    @inject(Component.ExceptionFilter)
-    private readonly appExceptionFilter: ExceptionFilter,
+    @inject(Component.UserController) private readonly userController: UserController,
+    @inject(Component.RentController) private readonly rentController: RentOfferController,
+    @inject(Component.CommentController) private readonly commentController: CommentController,
+    @inject(Component.ExceptionFilter) private readonly appExceptionFilter: ExceptionFilter,
   ) {
     this.server = express();
   }
@@ -50,6 +47,7 @@ export class Application {
   private async _initControllers() {
     this.server.use('/users', this.userController.router);
     this.server.use('/offers', this.rentController.router);
+    this.server.use('/comments', this.commentController.router);
   }
 
   private async _initMiddleware() {
