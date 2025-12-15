@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
-
 import { IMiddleware } from './middleware.interface.js';
 import { HttpError } from '../errors/http-error.js';
 import { StatusCodes } from 'http-status-codes';

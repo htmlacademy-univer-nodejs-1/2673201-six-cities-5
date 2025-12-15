@@ -11,9 +11,9 @@ export class UserService {
   async create(dto: CreateUserDto, salt: string): Promise<UserDocument> {
     const user = new UserModel({
       email: dto.email,
-      name: dto.name,
-      avatar: dto.avatar,
-      type: dto.typeUser,
+      name: dto.firstname,
+      avatar: dto.avatarPath,
+      type: dto,
       password: '',
     });
     user.setPassword(dto.password, salt);

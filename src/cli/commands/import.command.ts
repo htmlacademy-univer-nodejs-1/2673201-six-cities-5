@@ -1,13 +1,12 @@
 import { Command } from './command.interface.js';
 import {TSVFileReader} from '../../file-reader/tsv-file-reader.js';
 import {getErrorMessage} from '../../helpers/common.js';
-import {UserService} from '../../modules/user/user-service.interface.js';
+import {UserService} from '../../modules/user/user-service.interface';
 import {DatabaseClient, MongoDatabaseClient} from '../../database-client/index.js';
 import {Logger} from '../../logger/index.js';
 import {ConsoleLogger} from '../../logger/console.logger.js';
 import {DefaultUserService} from '../../modules/user/default-user.service.js';
 import {DefaultRentOfferService} from '../../rent-offer/default-rent-offer.service.js';
-import {UserModel} from '../../modules/user/user.entity.js';
 import {RentOfferModel} from '../../rent-offer/rent-offer.entity.js';
 import {createOffer} from '../../helpers/offer.js';
 import {getMongoURI} from '../../helpers/database.js';
@@ -28,7 +27,7 @@ export class ImportCommand implements Command {
 
     this.logger = new ConsoleLogger();
     this.offerService = new DefaultRentOfferService(this.logger, RentOfferModel);
-    this.userService = new DefaultUserService(this.logger, UserModel);
+    this.userService = new DefaultUserService();
     this.databaseClient = new MongoDatabaseClient(this.logger);
   }
 
@@ -45,14 +44,20 @@ export class ImportCommand implements Command {
 
   private async saveOffer(offer: OfferRent) {
 
-    const user = await this.userService.findOrCreate({
-      name: offer.author,
-      email: `${offer.author.toLowerCase().replace(/\s+/g, '.')}@example.com`,
-      avatar: '',
-      typeUser: 'обычный',
-      password: DEFAULT_USER_PASSWORD
-    },
-      this.salt!);
+    const [firstname, ...rest] = offer.author.trim().split(/\s+/);
+    const lastname = rest.join(' ') || 'User';
+
+    const user = await this.userService.findOrCreate(
+      {
+        email: `${offer.author.toLowerCase().replace(/\s+/g, '.')}@example.com`,
+        avatarPath: '',
+        firstname,
+        lastname,
+        password: DEFAULT_USER_PASSWORD,
+        type: 'обычный',
+      },
+      this.salt!
+    );
 
     await this.offerService.create({
       title: offer.title,

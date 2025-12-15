@@ -1,5 +1,5 @@
 import { Expose } from 'class-transformer';
-import {UserType} from '../../../types/user.type.js';
+import { UserType } from '../../../types/user.type.js';
 
 export class UserRdo {
   @Expose()
@@ -15,7 +15,7 @@ export class UserRdo {
   public name!: string;
 
   @Expose()
-  public typeUser!: UserType;
+  public type!: UserType;
 
   @Expose()
   public createdAt!: string;
