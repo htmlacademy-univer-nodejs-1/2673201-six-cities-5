@@ -18,6 +18,8 @@ import { ValidateDtoMiddleware } from '../rest/middleware/validate-dto.middlewar
 import { DocumentExistsMiddleware } from '../rest/middleware/document-exist.middleware.js';
 import { DEFAULT_DISCUSSED_OFFER_COUNT, DEFAULT_NEW_OFFER_COUNT } from './offer.constant.js';
 import { CommentRdo } from '../modules/comment/rdo/comment.rdo.js';
+import {PrivateRouteMiddleware} from '../rest/middleware/private-route.middleware.js';
+import {CreateOfferRequest} from './create-rent-offer-request.js';
 
 @injectable()
 export class RentOfferController extends BaseController {
@@ -33,7 +35,10 @@ export class RentOfferController extends BaseController {
       path: '/',
       method: HttpMethod.Post,
       handler: this.create,
-      middlewares: [new ValidateDtoMiddleware(CreateRentOfferDto)]
+      middlewares: [
+        new PrivateRouteMiddleware(),
+        new ValidateDtoMiddleware(CreateRentOfferDto)
+      ]
     });
     this.addRoute({
       path: '/:offerId',
@@ -49,6 +54,7 @@ export class RentOfferController extends BaseController {
       method: HttpMethod.Delete,
       handler: this.delete,
       middlewares: [
+        new PrivateRouteMiddleware(),
         new ValidateObjectIdMiddleware('offerId'),
         new DocumentExistsMiddleware(this.offerService, 'Offer', 'offerId')
       ]
@@ -58,6 +64,7 @@ export class RentOfferController extends BaseController {
       method: HttpMethod.Patch,
       handler: this.update,
       middlewares: [
+        new PrivateRouteMiddleware(),
         new ValidateObjectIdMiddleware('offerId'),
         new DocumentExistsMiddleware(this.offerService, 'Offer', 'offerId'),
         new ValidateDtoMiddleware(UpdateOfferDto)
@@ -93,10 +100,9 @@ export class RentOfferController extends BaseController {
   }
 
 
-  public async create({ body }: Request, res: Response,): Promise<void> {
-    const offer = await this.offerService.create(body as CreateRentOfferDto);
-    const responseData = fillDTO(OfferRdo, offer);
-    this.created(res, responseData);
+  public async create({ body, tokenPayload }: CreateOfferRequest, res: Response): Promise<void> {
+    const offer = await this.offerService.create({...(body as CreateRentOfferDto), author: tokenPayload.id,});
+    this.created(res, fillDTO(OfferRdo, offer));
   }
 
   public async update(req: Request, res: Response): Promise<void> {
