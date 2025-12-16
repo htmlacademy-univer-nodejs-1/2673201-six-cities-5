@@ -16,6 +16,9 @@ import {CreateUserDto} from './create-user.dto.js';
 import {ValidateObjectIdMiddleware} from '../../rest/middleware/validate.middleware.js';
 import {UploadFileMiddleware} from '../../rest/middleware/upload-file.middleware.js';
 import {LoginUserDto} from './login-user.dto.js';
+import {AuthService} from '../auth/auth-service.interface.js';
+import {LoggedUserRdo} from './rdo/logged-user.rdo.js';
+import {PrivateRouteMiddleware} from '../../rest/middleware/private-route.middleware.js';
 
 @injectable()
 export class UserController extends BaseController {
@@ -23,6 +26,7 @@ export class UserController extends BaseController {
     @inject(Component.Logger) protected readonly logger: Logger,
     @inject(Component.UserService) private readonly userService: UserService,
     @inject(Component.Config) private readonly configService: Config<RestSchema>,
+    @inject(Component.AuthService) private readonly authService: AuthService,
   ) {
     super(logger);
 
@@ -49,6 +53,12 @@ export class UserController extends BaseController {
         new ValidateObjectIdMiddleware('userId'),
         new UploadFileMiddleware(this.configService.get('UPLOAD_DIRECTORY'), 'avatar'),
       ]
+    });
+    this.addRoute({
+      path: '/login',
+      method: HttpMethod.Get,
+      handler: this.checkAuthenticate,
+      middlewares: [new PrivateRouteMiddleware()],
     });
   }
 
@@ -78,24 +88,42 @@ export class UserController extends BaseController {
     { body }: LoginUserRequest,
     res: Response,
   ): Promise<void> {
-    const existsUser = await this.userService.findByEmail(body.email);
-
-    if (!existsUser) {
-      throw new HttpError(
-        StatusCodes.UNAUTHORIZED,
-        `User with email ${body.email} not found.`,
-        'UserController',
-      );
-    }
-
-    const token = '1a2a3a4d5d';
-
-    this.ok(res, {message: `User ${body.email} successfully logged.`, token });
+    const user = await this.authService.verify(body);
+    const token = await this.authService.authenticate(user);
+    const responseData = fillDTO(LoggedUserRdo, {
+      email: user.email,
+      token,
+    });
+    this.ok(res, responseData);
   }
 
   public async uploadAvatar(req: Request, res: Response) {
     this.created(res, {
       filepath: req.file?.path
     });
+  }
+
+  public async checkAuthenticate(req: Request, res: Response): Promise<void> {
+    const email = req.tokenPayload?.email;
+
+    if (!email) {
+      throw new HttpError(
+        StatusCodes.UNAUTHORIZED,
+        'Unauthorized',
+        'UserController'
+      );
+    }
+
+    const foundedUser = await this.userService.findByEmail(email);
+
+    if (!foundedUser) {
+      throw new HttpError(
+        StatusCodes.UNAUTHORIZED,
+        'Unauthorized',
+        'UserController'
+      );
+    }
+
+    this.ok(res, fillDTO(UserRdo, foundedUser));
   }
 }

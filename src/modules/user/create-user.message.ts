@@ -4,6 +4,7 @@ export const CreateUserMessages = {
   },
   avatarPath: {
     invalidFormat: 'avatarPath is required',
+    invalidExtension: 'Avatar must be only in jpg or png',
   },
   firstname: {
     invalidFormat: 'firstname is required',
@@ -18,6 +19,6 @@ export const CreateUserMessages = {
     lengthField: 'min length for password is 6, max is 12'
   },
   type: {
-    invalidFormat: 'type must be a valid user type',
+    invalidFormat: 'type must be valid user type',
   }
 } as const;

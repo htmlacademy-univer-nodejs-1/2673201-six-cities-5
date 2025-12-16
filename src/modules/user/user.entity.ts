@@ -1,6 +1,7 @@
 import { defaultClasses, getModelForClass, prop, modelOptions } from '@typegoose/typegoose';
 import {User, UserType} from '../../types/user.type';
 import {createSHA256} from '../../helpers/hash.js';
+import {Types} from 'mongoose';
 
 export interface UserEntity extends defaultClasses.Base {}
 
@@ -34,6 +35,9 @@ export class UserEntity extends defaultClasses.TimeStamps implements User {
   @prop({ required: true, default: '' })
   private _password?: string;
 
+  @prop({ type: () => [Types.ObjectId], default: [] })
+  public favoriteOfferIds!: Types.ObjectId[];
+
   constructor(userData: User) {
     super();
 
@@ -49,6 +53,11 @@ export class UserEntity extends defaultClasses.TimeStamps implements User {
 
   public getPassword() {
     return this._password;
+  }
+
+  public verifyPassword(password: string, salt: string) {
+    const hashPassword = createSHA256(password, salt);
+    return hashPassword === this.password;
   }
 }
 
