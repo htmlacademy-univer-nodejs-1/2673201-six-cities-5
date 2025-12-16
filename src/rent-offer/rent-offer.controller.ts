@@ -100,10 +100,17 @@ export class RentOfferController extends BaseController {
   }
 
 
-  public async create({ body, tokenPayload }: CreateOfferRequest, res: Response): Promise<void> {
-    const offer = await this.offerService.create({...(body as CreateRentOfferDto), author: tokenPayload.id,});
+  public async create(req: Request, res: Response): Promise<void> {
+    const { body, tokenPayload } = req as CreateOfferRequest;
+
+    const offer = await this.offerService.create({
+      ...(body as CreateRentOfferDto),
+      author: tokenPayload.id,
+    });
+
     this.created(res, fillDTO(OfferRdo, offer));
   }
+
 
   public async update(req: Request, res: Response): Promise<void> {
     const { offerId } = req.params as { offerId: string };

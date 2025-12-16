@@ -18,6 +18,7 @@ import {UploadFileMiddleware} from '../../rest/middleware/upload-file.middleware
 import {LoginUserDto} from './login-user.dto.js';
 import {AuthService} from '../auth/auth-service.interface.js';
 import {LoggedUserRdo} from './rdo/logged-user.rdo.js';
+import {PrivateRouteMiddleware} from '../../rest/middleware/private-route.middleware.js';
 
 @injectable()
 export class UserController extends BaseController {
@@ -57,6 +58,7 @@ export class UserController extends BaseController {
       path: '/login',
       method: HttpMethod.Get,
       handler: this.checkAuthenticate,
+      middlewares: [new PrivateRouteMiddleware()],
     });
   }
 
@@ -101,10 +103,10 @@ export class UserController extends BaseController {
     });
   }
 
-  public async checkAuthenticate({ tokenPayload: { email }}: Request, res: Response) {
-    const foundedUser = await this.userService.findByEmail(email);
+  public async checkAuthenticate(req: Request, res: Response): Promise<void> {
+    const email = req.tokenPayload?.email;
 
-    if (! foundedUser) {
+    if (!email) {
       throw new HttpError(
         StatusCodes.UNAUTHORIZED,
         'Unauthorized',
@@ -112,6 +114,16 @@ export class UserController extends BaseController {
       );
     }
 
-    this.ok(res, fillDTO(LoggedUserRdo, foundedUser));
+    const foundedUser = await this.userService.findByEmail(email);
+
+    if (!foundedUser) {
+      throw new HttpError(
+        StatusCodes.UNAUTHORIZED,
+        'Unauthorized',
+        'UserController'
+      );
+    }
+
+    this.ok(res, fillDTO(UserRdo, foundedUser));
   }
 }
