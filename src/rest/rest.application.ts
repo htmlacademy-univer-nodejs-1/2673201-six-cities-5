@@ -1,5 +1,6 @@
 import { inject, injectable } from 'inversify';
 import express, { Express } from 'express';
+import cors from 'cors';
 import {Logger} from '../logger/index.js';
 import { Config, RestSchema } from '../config/index.js';
 import {Component} from '../types/component.enum.js';
@@ -10,6 +11,8 @@ import {RentOfferController} from '../rent-offer/rent-offer.controller.js';
 import {ExceptionFilter} from './exception-filter/exception-filter.interface.js';
 import CommentController from '../modules/comment/comment.controller.js';
 import {ParseTokenMiddleware} from './middleware/parse-token.middleware.js';
+import {getFullServerPath} from '../helpers/common.js';
+import {STATIC_FILES_ROUTE, STATIC_UPLOAD_ROUTE} from '../config/rest.constant.js';
 
 
 @injectable()
@@ -56,10 +59,15 @@ export class Application {
     const authenticateMiddleware = new ParseTokenMiddleware(this.config.get('JWT_SECRET'));
     this.server.use(express.json());
     this.server.use(
-      '/upload',
+      STATIC_UPLOAD_ROUTE,
       express.static(this.config.get('UPLOAD_DIRECTORY'))
     );
+    this.server.use(
+      STATIC_FILES_ROUTE,
+      express.static(this.config.get('STATIC_DIRECTORY_PATH'))
+    );
     this.server.use(authenticateMiddleware.execute.bind(authenticateMiddleware));
+    this.server.use(cors());
   }
 
   private async _initExceptionFilters() {
@@ -83,6 +91,6 @@ export class Application {
     this.logger.info('Exception filters initialization compleated');
     this.logger.info('Try to init server...');
     await this._initServer();
-    this.logger.info(`🚀 Server started on http://localhost:${this.config.get('PORT')}`);
+    this.logger.info(`🚀 Server started on ${getFullServerPath(this.config.get('HOST'), this.config.get('PORT'))}`);
   }
 }

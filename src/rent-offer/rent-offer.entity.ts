@@ -45,6 +45,10 @@ export class RentOfferEntity extends defaultClasses.TimeStamps implements OfferR
   @prop({ required: true, min: 0, max: 5, default: 0 })
   public rating: number;
 
+  @prop({ required: false, default: '' })
+  public image!: string;
+
+
   @prop({
     required: true,
     enum: ['apartment', 'house', 'room', 'hotel']

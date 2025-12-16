@@ -6,6 +6,7 @@ import {Config, RestConfig, RestSchema} from '../config/index.js';
 import {DatabaseClient, MongoDatabaseClient} from '../database-client/index.js';
 import {ExceptionFilter} from './exception-filter/exception-filter.interface.js';
 import {AppExceptionFilter} from './exception-filter/app-exception-filter.js';
+import {PathTransformer} from './transform/path-transformer.js';
 
 export function createRestApplicationContainer() {
   const restApplicationContainer = new Container();
@@ -15,5 +16,6 @@ export function createRestApplicationContainer() {
   restApplicationContainer.bind<Config<RestSchema>>(Component.Config).to(RestConfig).inSingletonScope();
   restApplicationContainer.bind<DatabaseClient>(Component.DatabaseClient).to(MongoDatabaseClient).inSingletonScope();
   restApplicationContainer.bind<ExceptionFilter>(Component.ExceptionFilter).to(AppExceptionFilter).inSingletonScope();
+  restApplicationContainer.bind<PathTransformer>(Component.PathTransformer).to(PathTransformer).inSingletonScope();
   return restApplicationContainer;
 }
