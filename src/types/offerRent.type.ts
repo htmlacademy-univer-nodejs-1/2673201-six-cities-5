@@ -4,6 +4,10 @@ export type OfferComfortType = 'Breakfast' | 'Air conditioning' | 'Laptop friend
 
 export type OfferCityType = 'Paris' | 'Cologne' | 'Brussels' | 'Amsterdam' | 'Hamburg' | 'Dusseldorf';
 
+export type ParamOfferId = {
+  offerId: string;
+};
+
 export interface OfferRent {
   title: string;
   description: string;
